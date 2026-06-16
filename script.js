@@ -245,4 +245,53 @@ document.addEventListener('DOMContentLoaded', () => {
     sections.forEach(s => observer.observe(s));
 
     // No skill bars to animate in the new stack layout
+    // Liquid Blur Dock behavior
+    const dockEl = document.getElementById('dock');
+    if (dockEl) {
+        const toggle = document.getElementById('dockToggle');
+        const panel = document.getElementById('dockPanel');
+
+        function openDock() {
+            dockEl.classList.add('open');
+            toggle.setAttribute('aria-expanded', 'true');
+            panel.setAttribute('aria-hidden', 'false');
+        }
+        function closeDock() {
+            dockEl.classList.remove('open');
+            toggle.setAttribute('aria-expanded', 'false');
+            panel.setAttribute('aria-hidden', 'true');
+        }
+
+        toggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (dockEl.classList.contains('open')) closeDock(); else openDock();
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!dockEl.contains(e.target)) closeDock();
+        });
+
+        // Close on scroll to avoid covering content
+        let scrollTimeout = null;
+        window.addEventListener('scroll', () => {
+            if (dockEl.classList.contains('open')) {
+                // small debounce to avoid rapid toggles
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => closeDock(), 120);
+            }
+        }, { passive: true });
+
+        // Close with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeDock();
+        });
+
+        // Keep focus inside when open (basic)
+        panel.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                // allow default tabbing; small panel so we don't trap
+            }
+        });
+    }
 });
