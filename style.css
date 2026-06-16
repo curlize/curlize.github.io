@@ -161,6 +161,10 @@ em { font-style: italic; color: var(--gold); }
 .hero {
     min-height: 100vh;
     background: var(--navy);
+    background-image: radial-gradient(circle at 82% 18%, rgba(201,168,76,0.16), transparent 18%),
+                      radial-gradient(circle at 86% 85%, rgba(255,255,255,0.06), transparent 12%),
+                      radial-gradient(circle at 24% 20%, rgba(255,255,255,0.04), transparent 10%);
+    background-blend-mode: screen;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -200,22 +204,72 @@ em { font-style: italic; color: var(--gold); }
 }
 .hero-h1 em { color: var(--gold-lt); display: block; }
 .hero-bottom {
-    position: relative;
     display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
+    align-items: flex-start;
+    justify-content: flex-start;
     gap: 2rem;
     padding-bottom: 3rem;
     flex-wrap: wrap;
 }
+.hero-copy {
+    display: grid;
+    gap: 1.25rem;
+    max-width: 34rem;
+}
+.hero-eyebrow {
+    position: relative;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 1rem;
+    margin-top: 5rem;
+    max-width: 32rem;
+}
+.hero-eyebrow span { color: var(--gold); }
 .hero-sub {
-    max-width: 28rem;
+    flex-basis: 100%;
+    display: block;
+    max-width: 32rem;
     font-size: 1rem;
-    font-weight: 300;
+    font-weight: 400;
+    color: rgba(255,255,255,0.95);
+    line-height: 1.9;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    margin-top: 1rem;
+    position: relative;
+    z-index: 2;
+}
+.hero-note {
+    max-width: 34rem;
+    font-size: 0.95rem;
     color: rgba(255,255,255,0.55);
     line-height: 1.8;
+    margin-top: -0.25rem;
 }
-.hero-actions { display: flex; gap: 1rem; align-items: center; flex-shrink: 0; }
+.hero-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.hero-chip {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.75);
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 0.75rem 0.95rem;
+    border-radius: 999px;
+}
+.hero-actions {
+    position: absolute;
+    right: 3rem;
+    top: 6.75rem;
+    z-index: 10;
+}
 .btn-primary {
     font-size: 0.85rem;
     font-weight: 600;
@@ -783,18 +837,29 @@ em { font-style: italic; color: var(--gold); }
     line-height: 1.8;
     margin-bottom: 3rem;
 }
+.contact-hint {
+    max-width: 36rem;
+    font-size: 0.9rem;
+    color: var(--txt-mid);
+    opacity: 0.75;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    margin-top: -2rem;
+    margin-bottom: 3rem;
+}
 
 /* Liquid Blur Dock */
 .dock {
     position: fixed;
-    right: 36px;
-    bottom: 36px;
-    left: auto;
-    transform: none;
+    right: 34px;
+    bottom: 34px;
+    top: auto;
+    transform: translateY(0);
     z-index: 1200;
     display: flex;
+    flex-direction: row-reverse;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     pointer-events: auto;
     font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
 }
@@ -802,27 +867,45 @@ em { font-style: italic; color: var(--gold); }
     appearance: none;
     -webkit-appearance: none;
     border: none;
-    background: rgba(255,255,255,0.65);
-    backdrop-filter: blur(8px) saturate(1.05);
-    -webkit-backdrop-filter: blur(8px) saturate(1.05);
-    padding: 10px 18px;
-    border-radius: 999px;
-    box-shadow: 0 12px 40px rgba(13,27,42,0.16);
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(18px) saturate(1.1);
+    -webkit-backdrop-filter: blur(18px) saturate(1.1);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    box-shadow: 0 22px 50px rgba(13,27,42,0.25);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    transition: transform 0.28s cubic-bezier(.2,.9,.3,1), box-shadow 0.2s;
+    justify-content: center;
+    position: relative;
+    transition: transform 0.28s cubic-bezier(.2,.9,.3,1), box-shadow 0.2s, background 0.2s;
+}
+.dock-toggle::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, rgba(201,168,76,0.9), rgba(201,168,76,0.25) 15%, transparent 40%, transparent 70%, rgba(201,168,76,0.35) 90%);
+    mask: radial-gradient(circle at center, transparent 42%, white 44%, white 56%, transparent 58%);
+    filter: blur(3px);
+    opacity: 0.9;
+    animation: glowSpin 2.8s linear infinite;
+}
+.dock-toggle:hover {
+    background: rgba(255,255,255,1);
+    transform: translateY(-1px);
 }
 .dock-toggle:active { transform: translateY(2px); }
-.dock-indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: linear-gradient(180deg, var(--gold) 0%, var(--gold-lt) 100%);
-    box-shadow: none;
+.dock-icon {
+    display: block;
+    color: var(--navy);
 }
-.dock-text { font-weight: 700; color: var(--txt-dark); letter-spacing: 0.06em; }
+.dock-indicator, .dock-text { display: none; }
+
+@keyframes glowSpin {
+    to { transform: rotate(1turn); }
+}
 
 .dock-panel {
     position: relative;
@@ -834,8 +917,8 @@ em { font-style: italic; color: var(--gold); }
     backdrop-filter: blur(14px) saturate(1.08);
     -webkit-backdrop-filter: blur(14px) saturate(1.08);
     box-shadow: 0 12px 40px rgba(13,27,42,0.06);
-    transform-origin: center;
-    transform: scaleX(0.01) translateY(4px);
+    transform-origin: right center;
+    transform: scaleX(0.01) translateX(30px);
     opacity: 0;
     transition: transform 420ms cubic-bezier(.2,.9,.3,1), opacity 260ms ease;
     pointer-events: none;
@@ -847,7 +930,7 @@ em { font-style: italic; color: var(--gold); }
     scroll-behavior: smooth;
 }
 .dock.open .dock-panel {
-    transform: scaleX(1) translateY(0);
+    transform: scaleX(1) translateX(0);
     opacity: 1;
     pointer-events: auto;
 }
@@ -856,16 +939,8 @@ em { font-style: italic; color: var(--gold); }
 .dock-panel::-webkit-scrollbar-track { background: transparent; }
 /* subtle left/right fade to hint scrollability */
 .dock-panel::before, .dock-panel::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 56px;
-    pointer-events: none;
-    z-index: 5;
+    display: none;
 }
-.dock-panel::before { left: 0; background: linear-gradient(90deg, rgba(255,255,255,0.6), rgba(255,255,255,0)); border-radius: 32px 0 0 32px; }
-.dock-panel::after { right: 0; background: linear-gradient(270deg, rgba(255,255,255,0.6), rgba(255,255,255,0)); border-radius: 0 32px 32px 0; }
 .dock-item {
     display: inline-flex;
     gap: 12px;
@@ -951,10 +1026,11 @@ em { font-style: italic; color: var(--gold); }
 
 @media (max-width: 640px) {
     .dock {
-        left: 50%;
-        right: auto;
-        transform: translateX(-50%);
-        bottom: 18px;
+        right: 18px;
+        left: auto;
+        transform: translateY(-50%);
+        bottom: auto;
+        top: 50%;
     }
     .dock-panel { padding: 8px; }
     .dock-text { display: none; }
