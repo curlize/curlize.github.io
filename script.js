@@ -1,3 +1,221 @@
+// ── HERO INTERACTIVE CANVAS ──
+(function () {
+    const canvas = document.getElementById('heroCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    let W, H, mouse = { x: -9999, y: -9999 }, trail = [];
+    const PARTICLE_COUNT = 160;
+    let particles = [];
+
+    // ── Ambient orbs (underneath) ──
+    const ORBS = [
+        { x: 0.72, y: 0.18, r: 0.40, color: [201,168,76],  speed: 0.00018, phase: 0   },
+        { x: 0.18, y: 0.72, r: 0.45, color: [30, 58, 95],  speed: 0.00013, phase: 2.1 },
+        { x: 0.50, y: 0.38, r: 0.32, color: [44, 82,130],  speed: 0.00022, phase: 4.3 },
+        { x: 0.88, y: 0.80, r: 0.28, color: [13, 27, 42],  speed: 0.00016, phase: 1.1 },
+        { x: 0.10, y: 0.22, r: 0.24, color: [201,168,76],  speed: 0.00019, phase: 3.5 },
+    ];
+
+    function resize() {
+        W = canvas.offsetWidth;
+        H = canvas.offsetHeight;
+        canvas.width  = W * devicePixelRatio;
+        canvas.height = H * devicePixelRatio;
+        ctx.scale(devicePixelRatio, devicePixelRatio);
+        initParticles();
+    }
+
+    function rand(min, max) { return min + Math.random() * (max - min); }
+
+    function initParticles() {
+        particles = Array.from({ length: PARTICLE_COUNT }, () => ({
+            x:    rand(0, W),
+            y:    rand(0, H),
+            ox:   0, oy: 0,         // home position (set after)
+            vx:   rand(-0.12, 0.12),
+            vy:   rand(-0.10, 0.10),
+            size: rand(1.2, 3.2),
+            alpha: rand(0.18, 0.55),
+            // gold or steel-blue tint, weighted toward white-ish
+            hue:  Math.random() < 0.35 ? 'gold' : 'blue',
+            speed: rand(0.6, 1.4),
+        }));
+        particles.forEach(p => { p.ox = p.x; p.oy = p.y; });
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    const hero = canvas.parentElement;
+    hero.addEventListener('mousemove', e => {
+        const rect = hero.getBoundingClientRect();
+        mouse.x = e.clientX - rect.left;
+        mouse.y = e.clientY - rect.top;
+        trail.push({ x: mouse.x, y: mouse.y, age: 0 });
+        if (trail.length > 28) trail.shift();
+    });
+    hero.addEventListener('mouseleave', () => {
+        mouse.x = -9999; mouse.y = -9999;
+        trail = [];
+    });
+
+    function drawOrbs(t) {
+        for (const orb of ORBS) {
+            const fx = Math.sin(t * orb.speed + orb.phase) * 0.06;
+            const fy = Math.cos(t * orb.speed * 0.7 + orb.phase) * 0.05;
+            let cx = (orb.x + fx) * W;
+            let cy = (orb.y + fy) * H;
+
+            // soft mouse repulsion for orbs
+            const dx = cx - mouse.x, dy = cy - mouse.y;
+            const dist = Math.hypot(dx, dy);
+            const pr = Math.min(W, H) * 0.22;
+            if (dist < pr && dist > 0) {
+                const push = (1 - dist / pr) * 70;
+                cx += (dx / dist) * push;
+                cy += (dy / dist) * push;
+            }
+
+            const radius = orb.r * Math.min(W, H);
+            const [r, g, b] = orb.color;
+            const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+            grad.addColorStop(0,   `rgba(${r},${g},${b},0.20)`);
+            grad.addColorStop(0.4, `rgba(${r},${g},${b},0.09)`);
+            grad.addColorStop(1,   `rgba(${r},${g},${b},0)`);
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+        }
+    }
+
+    function drawTrail() {
+        if (trail.length < 2) return;
+        for (let i = 1; i < trail.length; i++) {
+            const a = trail[i - 1], b = trail[i];
+            const progress = i / trail.length;
+            const alpha = progress * 0.55;
+            const radius = progress * 38;
+            const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, radius);
+            grad.addColorStop(0,   `rgba(201,168,76,${alpha})`);
+            grad.addColorStop(0.5, `rgba(201,168,76,${alpha * 0.3})`);
+            grad.addColorStop(1,   `rgba(201,168,76,0)`);
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, radius, 0, Math.PI * 2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+        }
+    }
+
+    function drawCursorGlow() {
+        if (mouse.x < 0) return;
+        const grad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 110);
+        grad.addColorStop(0,   'rgba(201,168,76,0.18)');
+        grad.addColorStop(0.4, 'rgba(201,168,76,0.07)');
+        grad.addColorStop(1,   'rgba(201,168,76,0)');
+        ctx.beginPath();
+        ctx.arc(mouse.x, mouse.y, 110, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
+        ctx.fill();
+    }
+
+    function drawParticles() {
+        const ATTRACT_R  = 160;   // px — particles inside this get pulled
+        const ATTRACT_STR = 0.04; // pull strength
+        const MAX_DRIFT  = 80;    // max displacement from home
+
+        for (const p of particles) {
+            // Drift
+            p.x += p.vx;
+            p.y += p.vy;
+
+            // Soft home-pull (keeps particles from wandering off)
+            const homeDx = p.ox - p.x, homeDy = p.oy - p.y;
+            const homeDist = Math.hypot(homeDx, homeDy);
+            if (homeDist > MAX_DRIFT) {
+                p.vx += homeDx * 0.002;
+                p.vy += homeDy * 0.002;
+            }
+
+            // Damp velocity a tiny bit
+            p.vx *= 0.995;
+            p.vy *= 0.995;
+
+            // Mouse attraction / swirl
+            if (mouse.x > 0) {
+                const dx = mouse.x - p.x, dy = mouse.y - p.y;
+                const dist = Math.hypot(dx, dy);
+                if (dist < ATTRACT_R && dist > 1) {
+                    const force = (1 - dist / ATTRACT_R) * ATTRACT_STR * p.speed;
+                    // slight perpendicular swirl
+                    p.vx += (dx / dist) * force + (-dy / dist) * force * 0.25;
+                    p.vy += (dy / dist) * force + ( dx / dist) * force * 0.25;
+                }
+            }
+
+            // Wrap edges
+            if (p.x < -10) p.x = W + 10;
+            if (p.x > W + 10) p.x = -10;
+            if (p.y < -10) p.y = H + 10;
+            if (p.y > H + 10) p.y = -10;
+
+            // Draw dot
+            const isNearMouse = mouse.x > 0 && Math.hypot(mouse.x - p.x, mouse.y - p.y) < ATTRACT_R;
+            const boost = isNearMouse ? 1.8 : 1;
+            const color = p.hue === 'gold'
+                ? `rgba(201,168,76,${p.alpha * boost})`
+                : `rgba(150,180,220,${p.alpha * boost * 0.7})`;
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size * (isNearMouse ? 1.3 : 1), 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+
+        // Draw connecting lines between nearby particles
+        for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+                const a = particles[i], b = particles[j];
+                const d = Math.hypot(a.x - b.x, a.y - b.y);
+                if (d < 90) {
+                    const alpha = (1 - d / 90) * 0.12;
+                    ctx.beginPath();
+                    ctx.moveTo(a.x, a.y);
+                    ctx.lineTo(b.x, b.y);
+                    ctx.strokeStyle = `rgba(201,168,76,${alpha})`;
+                    ctx.lineWidth = 0.8;
+                    ctx.stroke();
+                }
+            }
+        }
+    }
+
+    function draw(t) {
+        ctx.clearRect(0, 0, W, H);
+
+        // Base
+        ctx.fillStyle = '#0D1B2A';
+        ctx.fillRect(0, 0, W, H);
+
+        drawOrbs(t);
+        drawTrail();
+        drawCursorGlow();
+        drawParticles();
+
+        // Vignette
+        const vig = ctx.createRadialGradient(W/2, H/2, H*0.1, W/2, H/2, H*0.9);
+        vig.addColorStop(0,   'rgba(0,0,0,0)');
+        vig.addColorStop(1,   'rgba(0,0,0,0.60)');
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, 0, W, H);
+
+        requestAnimationFrame(draw);
+    }
+
+    requestAnimationFrame(draw);
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
     // Mobile nav toggle
     const burger = document.getElementById('burger');
@@ -26,20 +244,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { rootMargin: '-20% 0px -60% 0px', threshold: 0 });
     sections.forEach(s => observer.observe(s));
 
-    // Skill bar animation on scroll
-    const fills = document.querySelectorAll('.skill-fill');
-    const widths = Array.from(fills).map(f => f.style.width);
-    fills.forEach(f => f.style.width = '0');
-    const skillObs = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                fills.forEach((f, i) => {
-                    setTimeout(() => { f.style.transition = 'width 0.8s ease'; f.style.width = widths[i]; }, i * 80);
-                });
-                skillObs.disconnect();
-            }
-        });
-    }, { threshold: 0.3 });
-    const skillSec = document.querySelector('#skills');
-    if (skillSec) skillObs.observe(skillSec);
+    // No skill bars to animate in the new stack layout
 });
