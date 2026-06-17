@@ -37,14 +37,18 @@ em { font-style: italic; color: var(--gold); }
     align-items: center;
     justify-content: space-between;
     padding: 1.25rem 3rem;
-    background: rgba(13,27,42,0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(201,168,76,0.15);
+    background: rgba(13,27,42,0.78);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 .nav-logo {
     display: flex;
     align-items: center;
     transition: opacity 0.2s;
+}
+.nav-logo img {
+    width: 60px;
+    height: auto;
 }
 .nav-logo:hover { opacity: 0.8; }
 .nav-links { display: flex; align-items: center; gap: 1.25rem; }
@@ -267,7 +271,7 @@ em { font-style: italic; color: var(--gold); }
 .hero-actions {
     position: absolute;
     right: 3rem;
-    top: 6.75rem;
+    top: 7.75rem;
     z-index: 10;
 }
 .btn-primary {
