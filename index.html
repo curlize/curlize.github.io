@@ -53,13 +53,24 @@
 
 <!-- ── ABOUT ── -->
 <section id="about" class="section-about">
+    <!-- scroll-in elements get .reveal class -->
     <div class="about-grid">
-        <div class="about-img-wrap">
-            <img src="formal.png" alt="Charlize S. Mojares" class="about-photo">
-            <div class="about-img-tag">Charlize S. Mojares</div>
+
+        <div class="about-img-wrap reveal reveal-left">
+            <!-- tilt card JS wrapper -->
+            <div class="tilt-card" id="aboutTilt">
+                <img src="formal.png" alt="Charlize S. Mojares" class="about-photo">
+                <!-- shimmer overlay -->
+                <div class="photo-shimmer"></div>
+                <div class="about-img-tag">Charlize S. Mojares</div>
+            </div>
         </div>
-        <div class="about-text">
-            <h2 class="section-h2">A student who does<br>a little more than <em>study.</em></h2>
+
+        <div class="about-text reveal reveal-right">
+            <h2 class="section-h2 about-h2">
+                A student who does<br>
+                a little more than <em>study.</em>
+            </h2>
             <p class="body-text">
                 Hey! I'm <strong>Charlize S. Mojares</strong>, a 2nd-year Bachelor of Science in Information Technology student at the <strong>Polytechnic University of the Philippines – Sto. Tomas Campus</strong>. I care about building things that are useful, thoughtful, and when possible, a little beautiful.
             </p>
@@ -69,9 +80,10 @@
             <div class="tag-row">
                 <span class="tag">Web Development</span>
                 <span class="tag">Problem Solving</span>
-                <span class="tag">UI/UX Design</span>   
+                <span class="tag">UI/UX Design</span>
             </div>
         </div>
+
     </div>
 </section>
 
@@ -434,21 +446,43 @@
 <section id="achievements" class="section-dark">
     <h2 class="section-h2 light">Things I've <em>done.</em></h2>
     <div class="ach-grid">
-        <div class="ach-card">
-            <div class="ach-icon">✦</div>
-            <div class="ach-title">PUPCET Passer</div>
-            <p class="ach-body">Passed the Polytechnic University of the Philippines College Entrance Test, qualifying for admission to BSIT and demonstrating academic readiness.</p>
+
+        <div class="flip-card">
+            <div class="flip-inner">
+                <div class="flip-front">
+                    <div class="ach-icon">✦</div>
+                    <div class="ach-title">PUPCET Passer</div>
+                </div>
+                <div class="flip-back">
+                    <p class="ach-body">Passed the Polytechnic University of the Philippines College Entrance Test, qualifying for admission to BSIT.</p>
+                </div>
+            </div>
         </div>
-        <div class="ach-card">
-            <div class="ach-icon">✦</div>
-            <div class="ach-title">Dean's Lister</div>
-            <p class="ach-body">Earned Dean's List honors for three semesters in a row, reflecting consistent academic excellence and sustained high performance.</p>
+
+        <div class="flip-card">
+            <div class="flip-inner">
+                <div class="flip-front">
+                    <div class="ach-icon">✦</div>
+                    <div class="ach-title">Dean's Lister</div>
+                </div>
+                <div class="flip-back">
+                    <p class="ach-body">Earned Dean's List honors for three semesters in a row, reflecting consistent academic excellence.</p>
+                </div>
+            </div>
         </div>
-        <div class="ach-card">
-            <div class="ach-icon">✦</div>
-            <div class="ach-title">Cisco Networking Academy</div>
-            <p class="ach-body">Completed a Cisco Networking Academy certification in networking fundamentals, covering packet routing, LAN/WAN concepts, and practical simulation skills with Cisco Packet Tracer.</p>
+
+        <div class="flip-card">
+            <div class="flip-inner">
+                <div class="flip-front">
+                    <div class="ach-icon">✦</div>
+                    <div class="ach-title">Cisco Networking Academy</div>
+                </div>
+                <div class="flip-back">
+                    <p class="ach-body">Completed Cisco Networking Academy certification covering packet routing, LAN/WAN, and Cisco Packet Tracer.</p>
+                </div>
+            </div>
         </div>
+
     </div>
 </section>
 

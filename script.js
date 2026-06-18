@@ -294,4 +294,71 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+        // ── ABOUT SECTION: tilt + scroll reveal + counter ──
+        (function () {
+
+        // ── Scroll reveal (enhanced) ──
+        const revealSelectors = [
+            { sel: '.reveal',    threshold: 0.15, stagger: 120 },
+            { sel: '.edu-item',  threshold: 0.12, stagger: 160 },
+            { sel: '.proj-item', threshold: 0.08, stagger: 90  },
+            { sel: '.sk-card',   threshold: 0.10, stagger: 80  },
+            { sel: '.flip-card', threshold: 0.15, stagger: 140 },
+            { sel: '.section-h2',threshold: 0.20, stagger: 0   },
+        ];
+
+        revealSelectors.forEach(({ sel, threshold, stagger }) => {
+            const els = document.querySelectorAll(sel);
+            if (!els.length) return;
+            const obs = new IntersectionObserver((entries) => {
+                // Sort by vertical position so items animate top-to-bottom
+                const hitting = entries.filter(e => e.isIntersecting);
+                hitting
+                    .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+                    .forEach((e, i) => {
+                        setTimeout(() => {
+                            e.target.classList.add('visible');
+                            obs.unobserve(e.target);
+                        }, i * stagger);
+                    });
+            }, { threshold, rootMargin: '0px 0px -60px 0px' });
+            els.forEach(el => obs.observe(el));
+        });
+
+            // Count-up for stat numbers
+            const counters = document.querySelectorAll('[data-count]');
+            const countObs = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (!e.isIntersecting) return;
+                    const el = e.target;
+                    const target = +el.dataset.count;
+                    let current = 0;
+                    const step = Math.ceil(target / 30);
+                    const timer = setInterval(() => {
+                        current = Math.min(current + step, target);
+                        el.textContent = current;
+                        if (current >= target) clearInterval(timer);
+                    }, 40);
+                    countObs.unobserve(el);
+                });
+            }, { threshold: 0.5 });
+            counters.forEach(el => countObs.observe(el));
+
+            // 3-D tilt on photo card
+            const tilt = document.getElementById('aboutTilt');
+            if (!tilt) return;
+            tilt.addEventListener('mousemove', e => {
+                const { left, top, width, height } = tilt.getBoundingClientRect();
+                const x = (e.clientX - left) / width  - 0.5;   // -0.5 → 0.5
+                const y = (e.clientY - top)  / height - 0.5;
+                tilt.style.transform = `rotateY(${x * 14}deg) rotateX(${-y * 10}deg) scale(1.02)`;
+            });
+            tilt.addEventListener('mouseleave', () => {
+                tilt.style.transform = 'rotateY(0deg) rotateX(0deg) scale(1)';
+            });
+
+        })();
+
 });
+
