@@ -8,7 +8,6 @@
     const PARTICLE_COUNT = 160;
     let particles = [];
 
-    // ── Ambient orbs (underneath) ──
     const ORBS = [
         { x: 0.72, y: 0.18, r: 0.40, color: [201,168,76],  speed: 0.00018, phase: 0   },
         { x: 0.18, y: 0.72, r: 0.45, color: [30, 58, 95],  speed: 0.00013, phase: 2.1 },
@@ -32,12 +31,11 @@
         particles = Array.from({ length: PARTICLE_COUNT }, () => ({
             x:    rand(0, W),
             y:    rand(0, H),
-            ox:   0, oy: 0,         // home position (set after)
+            ox:   0, oy: 0,
             vx:   rand(-0.12, 0.12),
             vy:   rand(-0.10, 0.10),
             size: rand(1.2, 3.2),
             alpha: rand(0.18, 0.55),
-            // gold or steel-blue tint, weighted toward white-ish
             hue:  Math.random() < 0.35 ? 'gold' : 'blue',
             speed: rand(0.6, 1.4),
         }));
@@ -67,7 +65,6 @@
             let cx = (orb.x + fx) * W;
             let cy = (orb.y + fy) * H;
 
-            // soft mouse repulsion for orbs
             const dx = cx - mouse.x, dy = cy - mouse.y;
             const dist = Math.hypot(dx, dy);
             const pr = Math.min(W, H) * 0.22;
@@ -93,7 +90,7 @@
     function drawTrail() {
         if (trail.length < 2) return;
         for (let i = 1; i < trail.length; i++) {
-            const a = trail[i - 1], b = trail[i];
+            const b = trail[i];
             const progress = i / trail.length;
             const alpha = progress * 0.55;
             const radius = progress * 38;
@@ -121,16 +118,14 @@
     }
 
     function drawParticles() {
-        const ATTRACT_R  = 160;   // px — particles inside this get pulled
-        const ATTRACT_STR = 0.04; // pull strength
-        const MAX_DRIFT  = 80;    // max displacement from home
+        const ATTRACT_R  = 160;
+        const ATTRACT_STR = 0.04;
+        const MAX_DRIFT  = 80;
 
         for (const p of particles) {
-            // Drift
             p.x += p.vx;
             p.y += p.vy;
 
-            // Soft home-pull (keeps particles from wandering off)
             const homeDx = p.ox - p.x, homeDy = p.oy - p.y;
             const homeDist = Math.hypot(homeDx, homeDy);
             if (homeDist > MAX_DRIFT) {
@@ -138,29 +133,24 @@
                 p.vy += homeDy * 0.002;
             }
 
-            // Damp velocity a tiny bit
             p.vx *= 0.995;
             p.vy *= 0.995;
 
-            // Mouse attraction / swirl
             if (mouse.x > 0) {
                 const dx = mouse.x - p.x, dy = mouse.y - p.y;
                 const dist = Math.hypot(dx, dy);
                 if (dist < ATTRACT_R && dist > 1) {
                     const force = (1 - dist / ATTRACT_R) * ATTRACT_STR * p.speed;
-                    // slight perpendicular swirl
                     p.vx += (dx / dist) * force + (-dy / dist) * force * 0.25;
                     p.vy += (dy / dist) * force + ( dx / dist) * force * 0.25;
                 }
             }
 
-            // Wrap edges
             if (p.x < -10) p.x = W + 10;
             if (p.x > W + 10) p.x = -10;
             if (p.y < -10) p.y = H + 10;
             if (p.y > H + 10) p.y = -10;
 
-            // Draw dot
             const isNearMouse = mouse.x > 0 && Math.hypot(mouse.x - p.x, mouse.y - p.y) < ATTRACT_R;
             const boost = isNearMouse ? 1.8 : 1;
             const color = p.hue === 'gold'
@@ -173,7 +163,6 @@
             ctx.fill();
         }
 
-        // Draw connecting lines between nearby particles
         for (let i = 0; i < particles.length; i++) {
             for (let j = i + 1; j < particles.length; j++) {
                 const a = particles[i], b = particles[j];
@@ -194,7 +183,6 @@
     function draw(t) {
         ctx.clearRect(0, 0, W, H);
 
-        // Base
         ctx.fillStyle = '#0D1B2A';
         ctx.fillRect(0, 0, W, H);
 
@@ -203,7 +191,6 @@
         drawCursorGlow();
         drawParticles();
 
-        // Vignette
         const vig = ctx.createRadialGradient(W/2, H/2, H*0.1, W/2, H/2, H*0.9);
         vig.addColorStop(0,   'rgba(0,0,0,0)');
         vig.addColorStop(1,   'rgba(0,0,0,0.60)');
@@ -217,35 +204,63 @@
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Mobile nav toggle
-    const burger = document.getElementById('burger');
-    const navMobile = document.getElementById('navMobile');
-    burger.addEventListener('click', () => {
-        navMobile.classList.toggle('open');
-    });
-    // Close on link click
-    document.querySelectorAll('.nm-link').forEach(link => {
-        link.addEventListener('click', () => navMobile.classList.remove('open'));
-    });
 
-    // Active nav link on scroll
+    // ── Active nav link on scroll ──
     const sections = document.querySelectorAll('section, header');
     const navLinks = document.querySelectorAll('.nav-link');
-    const observer = new IntersectionObserver((entries) => {
+    const navObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const id = entry.target.getAttribute('id');
                 navLinks.forEach(link => {
-                    link.style.color = link.getAttribute('href') === `#${id}`
-                        ? 'var(--gold)' : '';
+                    link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
                 });
             }
         });
     }, { rootMargin: '-20% 0px -60% 0px', threshold: 0 });
-    sections.forEach(s => observer.observe(s));
+    sections.forEach(s => navObserver.observe(s));
 
-    // No skill bars to animate in the new stack layout
-    // Liquid Blur Dock behavior
+    // Collapse the mobile navbar after a link is tapped
+    const navCollapseEl = document.getElementById('navMain');
+    if (navCollapseEl && window.bootstrap) {
+        const bsCollapse = window.bootstrap.Collapse.getOrCreateInstance(navCollapseEl, { toggle: false });
+        navCollapseEl.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => bsCollapse.hide());
+        });
+    }
+
+    // ── Scroll reveal ──
+    const revealEls = document.querySelectorAll('.reveal');
+    if (revealEls.length) {
+        const revealObs = new IntersectionObserver((entries) => {
+            const hitting = entries.filter(e => e.isIntersecting);
+            hitting
+                .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+                .forEach((e, i) => {
+                    setTimeout(() => {
+                        e.target.classList.add('visible');
+                        revealObs.unobserve(e.target);
+                    }, i * 90);
+                });
+        }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+        revealEls.forEach(el => revealObs.observe(el));
+    }
+
+    // ── 3-D tilt on about photo card ──
+    const tilt = document.getElementById('aboutTilt');
+    if (tilt) {
+        tilt.addEventListener('mousemove', e => {
+            const { left, top, width, height } = tilt.getBoundingClientRect();
+            const x = (e.clientX - left) / width  - 0.5;
+            const y = (e.clientY - top)  / height - 0.5;
+            tilt.style.transform = `rotateY(${x * 14}deg) rotateX(${-y * 10}deg) scale(1.02)`;
+        });
+        tilt.addEventListener('mouseleave', () => {
+            tilt.style.transform = 'rotateY(0deg) rotateX(0deg) scale(1)';
+        });
+    }
+
+    // ── Floating contact dock ──
     const dockEl = document.getElementById('dock');
     if (dockEl) {
         const toggle = document.getElementById('dockToggle');
@@ -254,111 +269,24 @@ document.addEventListener('DOMContentLoaded', () => {
         function openDock() {
             dockEl.classList.add('open');
             toggle.setAttribute('aria-expanded', 'true');
-            panel.setAttribute('aria-hidden', 'false');
         }
         function closeDock() {
             dockEl.classList.remove('open');
             toggle.setAttribute('aria-expanded', 'false');
-            panel.setAttribute('aria-hidden', 'true');
         }
 
         toggle.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (dockEl.classList.contains('open')) closeDock(); else openDock();
+            dockEl.classList.contains('open') ? closeDock() : openDock();
         });
 
-        // Close when clicking outside
         document.addEventListener('click', (e) => {
             if (!dockEl.contains(e.target)) closeDock();
         });
 
-        // Close on scroll to avoid covering content
-        let scrollTimeout = null;
-        window.addEventListener('scroll', () => {
-            if (dockEl.classList.contains('open')) {
-                // small debounce to avoid rapid toggles
-                clearTimeout(scrollTimeout);
-                scrollTimeout = setTimeout(() => closeDock(), 120);
-            }
-        }, { passive: true });
-
-        // Close with Escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeDock();
         });
-
-        // Keep focus inside when open (basic)
-        panel.addEventListener('keydown', (e) => {
-            if (e.key === 'Tab') {
-                // allow default tabbing; small panel so we don't trap
-            }
-        });
     }
 
-        // ── ABOUT SECTION: tilt + scroll reveal + counter ──
-        (function () {
-
-        // ── Scroll reveal (enhanced) ──
-        const revealSelectors = [
-            { sel: '.reveal',    threshold: 0.15, stagger: 120 },
-            { sel: '.edu-item',  threshold: 0.12, stagger: 160 },
-            { sel: '.proj-item', threshold: 0.08, stagger: 90  },
-            { sel: '.sk-card',   threshold: 0.10, stagger: 80  },
-            { sel: '.flip-card', threshold: 0.15, stagger: 140 },
-            { sel: '.section-h2',threshold: 0.20, stagger: 0   },
-        ];
-
-        revealSelectors.forEach(({ sel, threshold, stagger }) => {
-            const els = document.querySelectorAll(sel);
-            if (!els.length) return;
-            const obs = new IntersectionObserver((entries) => {
-                // Sort by vertical position so items animate top-to-bottom
-                const hitting = entries.filter(e => e.isIntersecting);
-                hitting
-                    .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
-                    .forEach((e, i) => {
-                        setTimeout(() => {
-                            e.target.classList.add('visible');
-                            obs.unobserve(e.target);
-                        }, i * stagger);
-                    });
-            }, { threshold, rootMargin: '0px 0px -60px 0px' });
-            els.forEach(el => obs.observe(el));
-        });
-
-            // Count-up for stat numbers
-            const counters = document.querySelectorAll('[data-count]');
-            const countObs = new IntersectionObserver((entries) => {
-                entries.forEach(e => {
-                    if (!e.isIntersecting) return;
-                    const el = e.target;
-                    const target = +el.dataset.count;
-                    let current = 0;
-                    const step = Math.ceil(target / 30);
-                    const timer = setInterval(() => {
-                        current = Math.min(current + step, target);
-                        el.textContent = current;
-                        if (current >= target) clearInterval(timer);
-                    }, 40);
-                    countObs.unobserve(el);
-                });
-            }, { threshold: 0.5 });
-            counters.forEach(el => countObs.observe(el));
-
-            // 3-D tilt on photo card
-            const tilt = document.getElementById('aboutTilt');
-            if (!tilt) return;
-            tilt.addEventListener('mousemove', e => {
-                const { left, top, width, height } = tilt.getBoundingClientRect();
-                const x = (e.clientX - left) / width  - 0.5;   // -0.5 → 0.5
-                const y = (e.clientY - top)  / height - 0.5;
-                tilt.style.transform = `rotateY(${x * 14}deg) rotateX(${-y * 10}deg) scale(1.02)`;
-            });
-            tilt.addEventListener('mouseleave', () => {
-                tilt.style.transform = 'rotateY(0deg) rotateX(0deg) scale(1)';
-            });
-
-        })();
-
 });
-
