@@ -1,13 +1,3 @@
-/* ════════════════════════════════════════════════════════
-   MINIMAL CUSTOM CSS
-   Bootstrap 5 (via CDN) handles layout, grid, nav, buttons,
-   badges, and cards. This file only supplies:
-     1. Brand tokens (colors / fonts)
-     2. Effects Bootstrap has no utility for:
-        hero particle canvas, tilt card, flip card,
-        project name-roll hover, scroll-reveal, dock menu
-   ════════════════════════════════════════════════════════ */
-
 :root {
     --navy:      #0D1B2A;
     --steel:     #1E3A5F;
@@ -15,6 +5,15 @@
     --gold-lt:   #E2C47A;
     --cream:     #F5F0E8;
     --txt-mid:   #4a5568;
+}
+
+/* Reserve space for the fixed navbar so anchor jumps (#projects, #education, etc.)
+   don't scroll content underneath it */
+section[id], header[id] {
+    scroll-margin-top: 90px;
+}
+.section-divider {
+    border-color: rgba(201,168,76,0.18) !important;
 }
 
 body {
@@ -25,7 +24,6 @@ h1, h2, h3 { font-family: 'Playfair Display', Georgia, serif; }
 .hero-h1   { font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif; }
 em { font-style: italic; color: var(--gold); }
 
-/* Brand color utilities (so we don't need inline styles everywhere) */
 .bg-navy   { background-color: var(--navy) !important; }
 .text-gold { color: var(--gold) !important; }
 .text-gold-lt { color: var(--gold-lt) !important; }
@@ -33,6 +31,7 @@ em { font-style: italic; color: var(--gold); }
     background-color: var(--gold);
     border: 1px solid var(--gold);
     color: var(--navy);
+    font-family: 'Playfair Display', Georgia, serif;
     font-weight: 600;
     letter-spacing: 0.03em;
     transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
@@ -179,7 +178,7 @@ em { font-style: italic; color: var(--gold); }
 }
 .tilt-card:hover .photo-shimmer { background-position: 200% 0; }
 
-/* ── SCROLL REVEAL (JS toggles .visible) ── */
+/* ── SCROLL REVEAL ── */
 .reveal {
     opacity: 0;
     transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1);
@@ -188,6 +187,133 @@ em { font-style: italic; color: var(--gold); }
 .reveal-right { transform: translateX(40px); }
 .reveal-up    { transform: translateY(40px); }
 .reveal.visible { opacity: 1; transform: translate(0); }
+
+/* ── EDUCATION: vertical timeline ── */
+.timeline {
+    position: relative;
+    padding-left: 2.75rem;
+}
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.5rem;
+    top: 0.4rem;
+    bottom: 0.4rem;
+    width: 1px;
+    background: linear-gradient(to bottom, rgba(201,168,76,0.55), rgba(201,168,76,0.06));
+}
+.timeline-item {
+    position: relative;
+    padding-bottom: 3rem;
+}
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-dot {
+    position: absolute;
+    left: -2.75rem;
+    top: 0.3rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--navy);
+    border: 2px solid var(--gold);
+    box-shadow: 0 0 0 5px rgba(201,168,76,0.10);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.timeline-item.current .timeline-dot {
+    background: var(--gold);
+    animation: dotPulse 2.2s ease-in-out infinite;
+}
+@keyframes dotPulse {
+    0%, 100% { box-shadow: 0 0 0 5px rgba(201,168,76,0.10); }
+    50%      { box-shadow: 0 0 0 9px rgba(201,168,76,0.16); }
+}
+.edu-card {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    transition: background 0.35s ease, border-color 0.35s ease, transform 0.35s ease, box-shadow 0.35s ease;
+}
+.edu-card:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(201,168,76,0.35);
+    transform: translateY(-4px);
+    box-shadow: 0 22px 44px rgba(0,0,0,0.35);
+}
+.edu-period {
+    font-family: 'Playfair Display', serif;
+    letter-spacing: 0.02em;
+}
+.edu-pill {
+    background: rgba(255,255,255,0.05);
+    border-left: 2px solid var(--gold);
+    transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+.edu-pill:hover {
+    background: rgba(201,168,76,0.12);
+    border-color: var(--gold-lt);
+    transform: translateX(4px);
+}
+.edu-pill.is-ongoing {
+    background: rgba(201,168,76,0.1);
+    border-color: var(--gold-lt);
+}
+
+/* ── PROJECTS */
+.proj-card {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    border-radius: 16px;
+    transition: background 0.35s ease, border-color 0.35s ease, transform 0.35s ease, box-shadow 0.35s ease;
+}
+.proj-card + .proj-card {
+    margin-top: 1.75rem;
+}
+@media (min-width: 992px) {
+    .proj-card + .proj-card {
+        margin-top: 2.5rem;
+    }
+}
+.proj-card:hover {
+    background: rgba(255,255,255,0.045);
+    border-color: rgba(201,168,76,0.35) !important;
+    transform: translateY(-4px);
+    box-shadow: 0 22px 48px rgba(0,0,0,0.35);
+}
+.proj-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid rgba(201,168,76,0.4);
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    color: var(--gold-lt);
+    font-size: 0.95rem;
+}
+.proj-tag {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.75);
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+.proj-card:hover .proj-tag {
+    border-color: rgba(201,168,76,0.3);
+}
+.proj-link-card {
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-left: 2px solid var(--gold) !important;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    padding: 0.65rem 0.75rem !important;
+}
+.proj-link-card:hover {
+    background: rgba(201,168,76,0.1) !important;
+    border-color: rgba(201,168,76,0.4) !important;
+    border-left-color: var(--gold-lt) !important;
+    transform: translateY(-2px);
+}
 
 /* ── PROJECTS: name-roll hover (clip-swap text effect) ── */
 .proj-name-clip {
@@ -329,6 +455,37 @@ em { font-style: italic; color: var(--gold); }
     transition: background 0.18s, color 0.18s, transform 0.18s;
 }
 .dock-item:hover { background: rgba(201,168,76,0.1); color: var(--gold) !important; transform: translateY(-2px); }
+
+@media (max-width: 576px) {
+    .dock {
+        right: 16px;
+        bottom: 16px;
+        left: 16px;
+        flex-direction: column-reverse;
+        align-items: flex-end;
+        gap: 10px;
+    }
+    .dock-toggle {
+        width: 50px;
+        height: 50px;
+    }
+    .dock-panel {
+        flex-direction: column;
+        width: 100%;
+        max-width: 280px;
+        max-height: 60vh;
+        white-space: normal;
+        overflow-x: hidden;
+        overflow-y: auto;
+        transform-origin: bottom right;
+        transform: scaleY(0.05) translateY(20px);
+    }
+    .dock.open .dock-panel { transform: scaleY(1) translateY(0); }
+    .dock-item {
+        white-space: normal;
+        word-break: break-word;
+    }
+}
 
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition: none !important; animation: none !important; }
